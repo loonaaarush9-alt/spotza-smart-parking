@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpotZa - Smart Parking Web Application Prototype</title>
+  <link rel="icon" type="image/jpeg" href="./assets/spotza-icon.jpg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            plum: {
+              deep: '#2D1136',
+              mid: '#5C286A',
+              light: '#7E3690',
+            },
+            purplePink: {
+              DEFAULT: '#8A2E77',
+              accent: '#9333EA',
+            },
+            lavender: {
+              bg: '#F5EFF9',
+              light: '#EFE6F6',
+              border: '#E4D5EC',
+            },
+            pastelPink: {
+              DEFAULT: '#FCE7F3',
+              border: '#FBCFE8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body class="min-h-screen flex flex-col bg-[#F5EFF9] text-[#2D1136]">
+
+  <!-- Top Demo Disclaimer Banner -->
+  <div class="bg-[#2D1136] text-[#FCE7F3] text-xs py-2 px-4 text-center font-medium border-b border-[#5C286A] flex items-center justify-center gap-2">
+    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-[#8A2E77] text-white">
+      YIIC Edition 9 Prototype
+    </span>
+    <span>Demonstration prototype for smart parking discovery. All tariffs (₹) and availability data are simulated.</span>
+  </div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E4D5EC] shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-18 py-3 flex items-center justify-between">
+      <!-- App Branding -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="navigateToScreen('find')">
+        <img 
+          src="./assets/spotza-icon.jpg" 
+          alt="SpotZa Official Icon" 
+          class="w-11 h-11 rounded-xl shadow-md border border-[#E4D5EC] object-cover hover:scale-105 transition-transform"
+        />
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-extrabold tracking-tight text-[#2D1136]">SpotZa</h1>
+            <span class="hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#FCE7F3] text-[#8A2E77] border border-[#FBCFE8]">
+              Smart Parking
+            </span>
+          </div>
+          <p class="text-xs text-[#5C286A] font-medium hidden sm:block">Find Safe, Affordable & Nearby Parking in Seconds</p>
+        </div>
+      </div>
+
+      <!-- Navigation Steps Indicator -->
+      <nav aria-label="Progress" class="hidden md:flex items-center gap-2 bg-[#F5EFF9] px-3 py-1.5 rounded-full border border-[#E4D5EC]">
+        <button id="nav-step-1" onclick="navigateToScreen('find')" class="text-xs font-semibold px-3 py-1 rounded-full transition-all bg-[#2D1136] text-white shadow-sm flex items-center gap-1.5">
+          <span>1</span> Find
+        </button>
+        <span class="text-[#5C286A]/40 text-xs">→</span>
+        <button id="nav-step-2" onclick="navigateToScreen('compare')" class="text-xs font-medium px-3 py-1 rounded-full transition-all text-[#5C286A] hover:bg-[#EFE6F6] flex items-center gap-1.5">
+          <span>2</span> Compare
+        </button>
+        <span class="text-[#5C286A]/40 text-xs">→</span>
+        <button id="nav-step-3" onclick="navigateToScreen('details')" class="text-xs font-medium px-3 py-1 rounded-full transition-all text-[#5C286A] opacity-60 cursor-not-allowed flex items-center gap-1.5" disabled>
+          <span>3</span> Details
+        </button>
+      </nav>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center gap-2">
+        <button 
+          id="btn-matrix-toggle" 
+          onclick="openComparisonMatrix()" 
+          class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#8A2E77] bg-[#FCE7F3] hover:bg-[#F9CFE3] px-3 py-2 rounded-xl transition-colors border border-[#FBCFE8]"
+        >
+          <i data-lucide="columns-2" class="w-4 h-4"></i>
+          <span>Compare Table</span>
+        </button>
+
+        <button 
+          onclick="resetSearchToDefaults()" 
+          title="Reset search to defaults" 
+          class="p-2 text-[#5C286A] hover:text-[#2D1136] hover:bg-[#F5EFF9] rounded-xl transition-colors border border-transparent hover:border-[#E4D5EC]"
+        >
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+    <!-- ========================================== -->
+    <!-- SCREEN 1: FIND PARKING (HOME / SEARCH)     -->
+    <!-- ========================================== -->
+    <section id="screen-find" class="screen-fade space-y-8">
+      
+      <!-- Hero Value Proposition -->
+      <div class="text-center max-w-2xl mx-auto pt-2 sm:pt-4 space-y-3">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FCE7F3] text-[#8A2E77] text-xs font-bold border border-[#FBCFE8]">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>Transparent Pricing & Verified Security</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-[#2D1136] tracking-tight leading-tight">
+          Park with confidence, <br class="hidden sm:inline" />
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#8A2E77] to-[#2D1136]">
+            never overpay again.
+          </span>
+        </h2>
+        <p class="text-sm sm:text-base text-[#5C286A] leading-relaxed">
+          Drivers often reach a destination without knowing actual parking rates, available spaces, or security. SpotZa lets you compare verified parking options in Indian Rupees (₹) before you set off.
+        </p>
+      </div>
+
+      <!-- Main Search Card -->
+      <div class="spotza-card rounded-3xl p-6 sm:p-8 max-w-3xl mx-auto">
+        <form id="search-form" onsubmit="handleFindParkingSubmit(event)" class="space-y-6">
+          
+          <!-- 1. Destination Input -->
+          <div class="space-y-2">
+            <label for="destination-input" class="block text-sm font-bold text-[#2D1136] flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-4 h-4 text-[#8A2E77]"></i>
+                Destination or Area
+              </span>
+              <span class="text-xs font-normal text-[#5C286A]">Where are you heading?</span>
+            </label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="destination-input" 
+                required 
+                placeholder="e.g. City Center Commercial Hub, Metro Station, Market..."
+                value="City Center Commercial Hub"
+                class="w-full pl-11 pr-4 py-3.5 bg-[#F5EFF9]/70 focus:bg-white border border-[#E4D5EC] focus:border-[#8A2E77] rounded-2xl text-sm font-medium text-[#2D1136] outline-none transition-all focus:ring-2 focus:ring-[#8A2E77]/20"
+              />
+              <i data-lucide="search" class="w-5 h-5 text-[#8A2E77] absolute left-3.5 top-3.5"></i>
+            </div>
+
+            <!-- Quick Suggestion Preset Chips -->
+            <div class="pt-2 flex flex-wrap items-center gap-1.5">
+              <span class="text-[11px] font-semibold text-[#5C286A] mr-1">Popular:</span>
+              <button type="button" onclick="selectPresetDestination('City Center Commercial Hub')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#F5EFF9] hover:bg-[#FCE7F3] text-[#5C286A] hover:text-[#8A2E77] border border-[#E4D5EC] transition-colors">
+                City Center
+              </button>
+              <button type="button" onclick="selectPresetDestination('Central Metro Terminal')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#F5EFF9] hover:bg-[#FCE7F3] text-[#5C286A] hover:text-[#8A2E77] border border-[#E4D5EC] transition-colors">
+                Metro Terminal
+              </button>
+              <button type="button" onclick="selectPresetDestination('District Shopping Plaza')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#F5EFF9] hover:bg-[#FCE7F3] text-[#5C286A] hover:text-[#8A2E77] border border-[#E4D5EC] transition-colors">
+                Shopping Plaza
+              </button>
+              <button type="button" onclick="selectPresetDestination('Civic Financial District')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#F5EFF9] hover:bg-[#FCE7F3] text-[#5C286A] hover:text-[#8A2E77] border border-[#E4D5EC] transition-colors">
+                Financial District
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Vehicle Selection (Segmented Control) -->
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-[#2D1136] flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <i data-lucide="car" class="w-4 h-4 text-[#8A2E77]"></i>
+                Select Vehicle Type
+              </span>
+              <span class="text-xs font-normal text-[#5C286A]">Rates adjust automatically</span>
+            </label>
+            <div class="grid grid-cols-2 gap-3 p-1.5 bg-[#F5EFF9] rounded-2xl border border-[#E4D5EC]">
+              <button 
+                type="button" 
+                id="vehicle-btn-car" 
+                onclick="setVehicleType('car')" 
+                class="py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all bg-[#2D1136] text-white shadow-sm"
+              >
+                <i data-lucide="car" class="w-5 h-5"></i>
+                <span>Car / 4-Wheeler</span>
+              </button>
+              <button 
+                type="button" 
+                id="vehicle-btn-bike" 
+                onclick="setVehicleType('bike')" 
+                class="py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all text-[#5C286A] hover:bg-white"
+              >
+                <i data-lucide="bike" class="w-5 h-5"></i>
+                <span>Two-Wheeler / Bike</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Maximum Hourly Budget (₹) -->
+          <div class="space-y-3 bg-[#F5EFF9]/50 p-5 rounded-2xl border border-[#E4D5EC]">
+            <div class="flex items-center justify-between">
+              <label for="budget-slider" class="text-sm font-bold text-[#2D1136] flex items-center gap-2">
+                <i data-lucide="indian-rupee" class="w-4 h-4 text-[#8A2E77]"></i>
+                Maximum Hourly Budget
+              </label>
+              <div class="flex items-center gap-1.5 bg-white px-3 py-1 rounded-xl border border-[#E4D5EC] shadow-sm">
+                <span class="text-xs text-[#5C286A] font-semibold">Target:</span>
+                <span id="budget-value-display" class="text-base font-extrabold text-[#2D1136]">₹50/hr</span>
+              </div>
+            </div>
+
+            <!-- Slider -->
+            <input 
+              type="range" 
+              id="budget-slider" 
+              min="10" 
+              max="100" 
+              step="5" 
+              value="50"
+              oninput="handleBudgetSliderChange(this.value)"
+              class="w-full"
+            />
+
+            <!-- Quick Budget Presets -->
+            <div class="flex items-center justify-between text-xs text-[#5C286A] pt-1">
+              <span id="budget-min-label">Min: ₹10</span>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="setBudgetExplicit(20)" class="px-2 py-0.5 rounded bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[11px] font-medium">₹20</button>
+                <button type="button" onclick="setBudgetExplicit(40)" class="px-2 py-0.5 rounded bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[11px] font-medium">₹40</button>
+                <button type="button" onclick="setBudgetExplicit(60)" class="px-2 py-0.5 rounded bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[11px] font-medium">₹60</button>
+                <button type="button" onclick="setBudgetExplicit(80)" class="px-2 py-0.5 rounded bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[11px] font-medium">₹80</button>
+              </div>
+              <span id="budget-max-label">Max: ₹100</span>
+            </div>
+          </div>
+
+          <!-- Submit Action -->
+          <button 
+            type="submit" 
+            class="w-full py-4 px-6 rounded-2xl btn-plum font-bold text-base flex items-center justify-center gap-2 shadow-lg"
+          >
+            <i data-lucide="compass" class="w-5 h-5"></i>
+            <span>Find Available Parking Spaces</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- Core Value Pillars Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto pt-4">
+        <div class="bg-white p-5 rounded-2xl border border-[#E4D5EC] shadow-sm flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-[#FCE7F3] text-[#8A2E77] flex items-center justify-center flex-shrink-0">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-[#2D1136]">Zero Pricing Shocks</h4>
+            <p class="text-xs text-[#5C286A] mt-0.5">Know exact hourly rates in ₹ upfront before choosing a lot. No unexpected parking fees.</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-[#E4D5EC] shadow-sm flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-[#F5EFF9] text-[#2D1136] flex items-center justify-center flex-shrink-0">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-[#2D1136]">Verified Security</h4>
+            <p class="text-xs text-[#5C286A] mt-0.5">Check for 24/7 CCTV surveillance, boom barriers, and on-duty physical guards for vehicle safety.</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-[#E4D5EC] shadow-sm flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-[#FCE7F3] text-[#8A2E77] flex items-center justify-center flex-shrink-0">
+            <i data-lucide="footprints" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-[#2D1136]">Proximity & Walk Time</h4>
+            <p class="text-xs text-[#5C286A] mt-0.5">Accurate distance and walking times so you never park too far from your destination.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 2: COMPARE PARKING (RESULTS LIST)   -->
+    <!-- ========================================== -->
+    <section id="screen-compare" class="hidden screen-fade space-y-6">
+      
+      <!-- Current Query Context Bar -->
+      <div class="spotza-card rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-[#5C286A] uppercase tracking-wide">Showing Results Near:</span>
+            <span id="summary-destination-tag" class="text-sm font-extrabold text-[#2D1136] bg-[#F5EFF9] px-2.5 py-0.5 rounded-lg border border-[#E4D5EC]">
+              City Center Commercial Hub
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-[#5C286A] flex-wrap">
+            <span class="inline-flex items-center gap-1 font-semibold text-[#8A2E77]">
+              <i data-lucide="car" id="summary-vehicle-icon" class="w-3.5 h-3.5"></i>
+              <span id="summary-vehicle-text">Car</span>
+            </span>
+            <span>•</span>
+            <span class="font-semibold text-[#2D1136]">
+              Budget Limit: <span id="summary-budget-text" class="text-[#8A2E77]">₹50/hr</span>
+            </span>
+            <span>•</span>
+            <span id="summary-count-text">4 Parking Locations</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button 
+            onclick="navigateToScreen('find')" 
+            class="px-3.5 py-2 text-xs font-bold text-[#2D1136] bg-[#F5EFF9] hover:bg-[#EFE6F6] rounded-xl border border-[#E4D5EC] flex items-center gap-1.5 transition-colors"
+          >
+            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+            <span>Edit Search</span>
+          </button>
+          <button 
+            onclick="openComparisonMatrix()" 
+            class="px-3.5 py-2 text-xs font-bold text-white bg-[#8A2E77] hover:bg-[#722361] rounded-xl shadow-sm flex items-center gap-1.5 transition-colors"
+          >
+            <i data-lucide="table" class="w-3.5 h-3.5"></i>
+            <span>Side-by-Side View</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sorting & Filtering Controls Toolbar -->
+      <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-[#E4D5EC] shadow-sm">
+        
+        <!-- Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0" id="filter-chips-container">
+          <button 
+            type="button" 
+            onclick="setFilter('all')" 
+            id="filter-chip-all" 
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-[#2D1136] text-white flex-shrink-0"
+          >
+            All Lots (4)
+          </button>
+          <button 
+            type="button" 
+            onclick="setFilter('budget')" 
+            id="filter-chip-budget" 
+            class="px-3 py-1.5 rounded-xl text-xs font-medium text-[#5C286A] bg-[#F5EFF9] hover:bg-[#EFE6F6] border border-[#E4D5EC] transition-all flex-shrink-0 flex items-center gap-1"
+          >
+            <i data-lucide="check-circle-2" class="w-3 h-3 text-[#059669]"></i>
+            <span>Within Budget</span>
+          </button>
+          <button 
+            type="button" 
+            onclick="setFilter('cctv')" 
+            id="filter-chip-cctv" 
+            class="px-3 py-1.5 rounded-xl text-xs font-medium text-[#5C286A] bg-[#F5EFF9] hover:bg-[#EFE6F6] border border-[#E4D5EC] transition-all flex-shrink-0 flex items-center gap-1"
+          >
+            <i data-lucide="video" class="w-3 h-3 text-[#8A2E77]"></i>
+            <span>CCTV Protected</span>
+          </button>
+          <button 
+            type="button" 
+            onclick="setFilter('guard')" 
+            id="filter-chip-guard" 
+            class="px-3 py-1.5 rounded-xl text-xs font-medium text-[#5C286A] bg-[#F5EFF9] hover:bg-[#EFE6F6] border border-[#E4D5EC] transition-all flex-shrink-0 flex items-center gap-1"
+          >
+            <i data-lucide="shield" class="w-3 h-3 text-[#2D1136]"></i>
+            <span>24/7 Guard</span>
+          </button>
+        </div>
+
+        <!-- Sort Select -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <label for="sort-dropdown" class="text-xs font-bold text-[#5C286A] flex items-center gap-1">
+            <i data-lucide="arrow-down-up" class="w-3.5 h-3.5 text-[#8A2E77]"></i>
+            <span>Sort By:</span>
+          </label>
+          <select 
+            id="sort-dropdown" 
+            onchange="handleSortChange(this.value)"
+            class="text-xs font-bold text-[#2D1136] bg-[#F5EFF9] border border-[#E4D5EC] rounded-xl px-3 py-2 outline-none focus:border-[#8A2E77]"
+          >
+            <option value="price-asc">Price: Lowest First (₹)</option>
+            <option value="distance-asc">Distance: Closest First</option>
+            <option value="availability-desc">Availability: Most Spaces</option>
+            <option value="rating-desc">Rating: Highest Rated</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Parking Cards List Container -->
+      <div id="parking-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <!-- Empty State Card (Hidden by default) -->
+      <div id="empty-state-card" class="hidden spotza-card rounded-3xl p-10 text-center space-y-4 max-w-lg mx-auto">
+        <div class="w-16 h-16 rounded-2xl bg-[#FCE7F3] text-[#8A2E77] flex items-center justify-center mx-auto">
+          <i data-lucide="search-x" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-xl font-bold text-[#2D1136]">No Parking Options Match Your Filter</h3>
+        <p class="text-sm text-[#5C286A]">
+          Try relaxing your budget filter or switching criteria to view all available locations.
+        </p>
+        <button 
+          onclick="resetFiltersAndShowAll()" 
+          class="btn-plum px-5 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2"
+        >
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <span>Reset Filters</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 3: PARKING DETAILS & CALCULATOR     -->
+    <!-- ========================================== -->
+    <section id="screen-details" class="hidden screen-fade space-y-6">
+      
+      <!-- Back Navigation Bar -->
+      <div class="flex items-center justify-between">
+        <button 
+          onclick="navigateToScreen('compare')" 
+          class="inline-flex items-center gap-2 text-xs font-bold text-[#2D1136] bg-white hover:bg-[#F5EFF9] px-4 py-2.5 rounded-xl border border-[#E4D5EC] shadow-sm transition-colors"
+        >
+          <i data-lucide="arrow-left" class="w-4 h-4 text-[#8A2E77]"></i>
+          <span>Back to Comparison Results</span>
+        </button>
+
+        <span class="text-xs font-medium text-[#5C286A] bg-[#FCE7F3] text-[#8A2E77] px-3 py-1 rounded-full border border-[#FBCFE8]">
+          Demo Facility Profile
+        </span>
+      </div>
+
+      <!-- Main Details Card -->
+      <div class="spotza-card rounded-3xl p-6 sm:p-8 space-y-8">
+        
+        <!-- Header Info -->
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-[#E4D5EC] pb-6">
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="detail-category-badge" class="text-xs font-bold px-2.5 py-0.5 rounded-md bg-[#F5EFF9] text-[#5C286A] border border-[#E4D5EC]">
+                Covered Multi-Level Deck
+              </span>
+              <span id="detail-featured-badge" class="text-xs font-bold px-2.5 py-0.5 rounded-md bg-[#FCE7F3] text-[#8A2E77] border border-[#FBCFE8]">
+                Closest Walk
+              </span>
+            </div>
+            <h2 id="detail-name" class="text-2xl sm:text-3xl font-extrabold text-[#2D1136]">
+              Central Multi-Level Parking Deck
+            </h2>
+            <p id="detail-address" class="text-sm text-[#5C286A] flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-4 h-4 text-[#8A2E77] flex-shrink-0"></i>
+              <span>Block A, Commercial Boulevard • Opposite Central Mall Gate 1</span>
+            </p>
+          </div>
+
+          <!-- Price & Rating Badge -->
+          <div class="flex md:flex-col items-center md:items-end justify-between gap-2 bg-[#F5EFF9] p-4 rounded-2xl border border-[#E4D5EC]">
+            <div>
+              <span class="text-xs font-medium text-[#5C286A] block">Hourly Tariff (<span id="detail-vehicle-label">Car</span>)</span>
+              <span id="detail-hourly-price" class="text-3xl font-extrabold text-[#2D1136]">₹40<span class="text-sm font-semibold text-[#5C286A]">/hr</span></span>
+            </div>
+            <div class="flex items-center gap-1 text-xs font-bold text-[#8A2E77] bg-white px-2.5 py-1 rounded-lg border border-[#E4D5EC]">
+              <i data-lucide="star" class="w-3.5 h-3.5 fill-[#8A2E77]"></i>
+              <span id="detail-rating">4.8</span>
+              <span class="text-[#5C286A] font-normal">(142 reviews)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4-Box Key Metrics Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div class="bg-[#F5EFF9]/70 p-4 rounded-2xl border border-[#E4D5EC]">
+            <span class="text-xs text-[#5C286A] font-medium block">Distance to Destination</span>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <span id="detail-distance" class="text-xl font-bold text-[#2D1136]">0.25 km</span>
+              <span id="detail-walk-time" class="text-xs font-semibold text-[#8A2E77]">(3 min walk)</span>
+            </div>
+          </div>
+
+          <div class="bg-[#F5EFF9]/70 p-4 rounded-2xl border border-[#E4D5EC]">
+            <span class="text-xs text-[#5C286A] font-medium block">Currently Available</span>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <span id="detail-available-spots" class="text-xl font-bold text-[#059669]">38 Spaces</span>
+              <span class="text-[11px] font-semibold text-[#059669] bg-[#DCFCE7] px-1.5 py-0.5 rounded">Open</span>
+            </div>
+          </div>
+
+          <div class="bg-[#F5EFF9]/70 p-4 rounded-2xl border border-[#E4D5EC]">
+            <span class="text-xs text-[#5C286A] font-medium block">Total Lot Capacity</span>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <span id="detail-total-capacity" class="text-xl font-bold text-[#2D1136]">160 Spaces</span>
+              <span class="text-xs text-[#5C286A] font-normal">Capacity</span>
+            </div>
+          </div>
+
+          <div class="bg-[#F5EFF9]/70 p-4 rounded-2xl border border-[#E4D5EC]">
+            <span class="text-xs text-[#5C286A] font-medium block">Security Rating</span>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <span id="detail-security-score" class="text-xl font-bold text-[#8A2E77]">4.9 / 5.0</span>
+              <span class="text-xs text-[#5C286A] font-normal">Verified</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security & Safety Deep-Dive Box -->
+        <div class="bg-white rounded-2xl p-5 border border-[#E4D5EC] shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-[#E4D5EC] pb-3">
+            <h3 class="text-base font-bold text-[#2D1136] flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-5 h-5 text-[#8A2E77]"></i>
+              <span>Safety & Surveillance Verification</span>
+            </h3>
+            <span class="text-xs font-bold text-[#059669] bg-[#DCFCE7] px-2.5 py-1 rounded-full flex items-center gap-1">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Verified On-Site</span>
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex items-start gap-3 p-3.5 bg-[#F5EFF9] rounded-xl border border-[#E4D5EC]">
+              <div class="w-9 h-9 rounded-lg bg-white text-[#8A2E77] flex items-center justify-center flex-shrink-0 shadow-sm">
+                <i data-lucide="video" class="w-5 h-5"></i>
+              </div>
+              <div class="space-y-0.5">
+                <h4 class="text-xs font-bold text-[#2D1136]">CCTV Continuous Surveillance</h4>
+                <p id="detail-cctv-info" class="text-xs text-[#5C286A]">32 High-Definition 360° cameras with 24/7 continuous recording</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 p-3.5 bg-[#F5EFF9] rounded-xl border border-[#E4D5EC]">
+              <div class="w-9 h-9 rounded-lg bg-white text-[#2D1136] flex items-center justify-center flex-shrink-0 shadow-sm">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+              </div>
+              <div class="space-y-0.5">
+                <h4 class="text-xs font-bold text-[#2D1136]">On-Duty Security Personnel</h4>
+                <p id="detail-guard-info" class="text-xs text-[#5C286A]">24/7 Physical Guard On-Duty at entry and exit boom barriers</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amenities Checklist Grid -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-[#2D1136] flex items-center gap-2">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-[#8A2E77]"></i>
+            <span>Included Facilities & Amenities</span>
+          </h3>
+          <div id="detail-amenities-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- INTERACTIVE ESTIMATED PARKING COST CALCULATOR  -->
+        <!-- ============================================== -->
+        <div class="bg-gradient-to-br from-[#F5EFF9] to-[#FCE7F3]/40 rounded-3xl p-6 sm:p-7 border border-[#E4D5EC] space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E4D5EC] pb-4">
+            <div>
+              <h3 class="text-lg font-extrabold text-[#2D1136] flex items-center gap-2">
+                <i data-lucide="calculator" class="w-5 h-5 text-[#8A2E77]"></i>
+                <span>Estimated Parking Cost Calculator</span>
+              </h3>
+              <p class="text-xs text-[#5C286A] mt-0.5">Select your expected duration to view the transparent estimated cost breakdown.</p>
+            </div>
+            <div class="text-xs font-bold text-[#8A2E77] bg-white px-3 py-1.5 rounded-xl border border-[#E4D5EC] shadow-sm self-start sm:self-auto">
+              Dynamic Pricing Engine
+            </div>
+          </div>
+
+          <!-- Duration Selector -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label for="duration-slider" class="text-xs font-bold text-[#2D1136] flex items-center gap-1.5">
+                <i data-lucide="clock" class="w-4 h-4 text-[#8A2E77]"></i>
+                <span>Parking Duration:</span>
+              </label>
+              <span id="calculator-duration-label" class="text-sm font-extrabold text-[#2D1136] bg-white px-3 py-1 rounded-lg border border-[#E4D5EC] shadow-sm">
+                3 Hours
+              </span>
+            </div>
+
+            <input 
+              type="range" 
+              id="duration-slider" 
+              min="1" 
+              max="12" 
+              step="1" 
+              value="3" 
+              oninput="handleDurationSliderChange(this.value)"
+              class="w-full"
+            />
+
+            <!-- Quick Duration Chips -->
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <span class="text-[11px] font-semibold text-[#5C286A] mr-1">Quick Select:</span>
+              <button type="button" onclick="setDurationExplicit(1)" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[#5C286A] transition-colors">1 hr</button>
+              <button type="button" onclick="setDurationExplicit(2)" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[#5C286A] transition-colors">2 hrs</button>
+              <button type="button" onclick="setDurationExplicit(3)" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[#5C286A] transition-colors">3 hrs</button>
+              <button type="button" onclick="setDurationExplicit(5)" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[#5C286A] transition-colors">5 hrs</button>
+              <button type="button" onclick="setDurationExplicit(8)" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[#5C286A] transition-colors">8 hrs</button>
+              <button type="button" onclick="setDurationExplicit(12)" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white hover:bg-[#FCE7F3] border border-[#E4D5EC] text-[#5C286A] transition-colors">12 hrs (Full Day)</button>
+            </div>
+          </div>
+
+          <!-- Mathematical Calculation Breakdown Card -->
+          <div class="bg-white p-5 rounded-2xl border border-[#E4D5EC] shadow-sm space-y-3">
+            <div class="flex items-center justify-between text-xs text-[#5C286A]">
+              <span>Base Rate (<span id="calc-rate-label">₹40/hr</span> × <span id="calc-hours-label">3 hrs</span>):</span>
+              <span id="calc-subtotal" class="font-bold text-[#2D1136]">₹120</span>
+            </div>
+            <div class="flex items-center justify-between text-xs text-[#5C286A]">
+              <span>Prototype Platform & Service Fee:</span>
+              <span class="font-bold text-[#059669]">₹0 (Free Demo)</span>
+            </div>
+            <div class="border-t border-[#E4D5EC] pt-3 flex items-center justify-between">
+              <div>
+                <span class="text-sm font-extrabold text-[#2D1136] block">Estimated Total Cost</span>
+                <span id="calc-budget-comparison-pill" class="text-[11px] font-bold text-[#059669]">
+                  ✓ Within your budget target
+                </span>
+              </div>
+              <span id="calc-grand-total" class="text-3xl font-black text-[#2D1136]">
+                ₹120
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demo Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+          <button 
+            type="button" 
+            onclick="simulateLiveAvailabilityCheck()" 
+            id="btn-check-availability"
+            class="w-full sm:w-1/2 py-3.5 px-5 rounded-2xl btn-outline-plum font-bold text-sm flex items-center justify-center gap-2"
+          >
+            <i data-lucide="refresh-cw" id="icon-refresh-check" class="w-4 h-4 text-[#8A2E77]"></i>
+            <span id="text-check-availability">Check Availability</span>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="handleSelectParkingClick()" 
+            class="w-full sm:w-1/2 py-3.5 px-5 rounded-2xl btn-plum font-bold text-sm flex items-center justify-center gap-2 shadow-lg"
+          >
+            <i data-lucide="bookmark-check" class="w-5 h-5"></i>
+            <span>Select This Parking Spot</span>
+          </button>
+        </div>
+
+        <p class="text-center text-xs text-[#5C286A]">
+          🔒 <strong>Prototype Notice:</strong> Selecting a parking spot does not charge real money or create binding bookings.
+        </p>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: SIDE-BY-SIDE COMPARISON MATRIX    -->
+  <!-- ========================================== -->
+  <div id="modal-matrix" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl border border-[#E4D5EC]">
+      
+      <div class="flex items-center justify-between border-b border-[#E4D5EC] pb-4">
+        <div>
+          <h3 class="text-xl font-extrabold text-[#2D1136] flex items-center gap-2">
+            <i data-lucide="columns-2" class="w-5 h-5 text-[#8A2E77]"></i>
+            <span>Side-by-Side Parking Comparison Matrix</span>
+          </h3>
+          <p class="text-xs text-[#5C286A]">Directly evaluate all 4 facilities on Tariff, Distance, Security, and Availability</p>
+        </div>
+        <button onclick="closeComparisonMatrix()" class="p-2 text-[#5C286A] hover:text-[#2D1136] rounded-xl hover:bg-[#F5EFF9]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Comparison Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-[#E4D5EC] bg-[#F5EFF9]">
+              <th class="p-3 font-bold text-[#2D1136]">Feature / Metric</th>
+              <th class="p-3 font-bold text-[#2D1136]">Central Deck</th>
+              <th class="p-3 font-bold text-[#2D1136]">Metro Safe Vault</th>
+              <th class="p-3 font-bold text-[#2D1136]">City Plaza Garage</th>
+              <th class="p-3 font-bold text-[#2D1136]">District Market Yard</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#E4D5EC]">
+            <tr>
+              <td class="p-3 font-semibold text-[#5C286A]">Hourly Tariff (Car)</td>
+              <td class="p-3 font-bold text-[#2D1136]">₹40/hr</td>
+              <td class="p-3 font-bold text-[#059669]">₹30/hr</td>
+              <td class="p-3 font-bold text-[#2D1136]">₹60/hr</td>
+              <td class="p-3 font-bold text-[#059669]">₹20/hr</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[#5C286A]">Hourly Tariff (Bike)</td>
+              <td class="p-3 font-bold text-[#2D1136]">₹15/hr</td>
+              <td class="p-3 font-bold text-[#2D1136]">₹10/hr</td>
+              <td class="p-3 font-bold text-[#2D1136]">₹20/hr</td>
+              <td class="p-3 font-bold text-[#2D1136]">₹10/hr</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[#5C286A]">Walking Distance</td>
+              <td class="p-3 font-bold text-[#059669]">0.25 km (3 min)</td>
+              <td class="p-3 text-[#2D1136]">0.45 km (6 min)</td>
+              <td class="p-3 text-[#2D1136]">0.65 km (8 min)</td>
+              <td class="p-3 text-[#2D1136]">0.85 km (11 min)</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[#5C286A]">Available Spaces (Demo)</td>
+              <td class="p-3 text-[#2D1136]">38 / 160</td>
+              <td class="p-3 text-[#2D1136]">84 / 220</td>
+              <td class="p-3 font-bold text-[#059669]">112 / 300</td>
+              <td class="p-3 text-[#D97706]">14 / 90</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[#5C286A]">CCTV Surveillance</td>
+              <td class="p-3 text-[#059669] font-bold">✓ 32 HD Cams</td>
+              <td class="p-3 text-[#059669] font-bold">✓ Full Bay</td>
+              <td class="p-3 text-[#059669] font-bold">✓ 64 AI Cams</td>
+              <td class="p-3 text-[#059669] font-bold">✓ Perimeter</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[#5C286A]">Physical Security Guard</td>
+              <td class="p-3 text-[#059669] font-bold">✓ 24/7 Guard</td>
+              <td class="p-3 text-[#059669] font-bold">✓ 2-Shift Guard</td>
+              <td class="p-3 text-[#059669] font-bold">✓ 24/7 Agency</td>
+              <td class="p-3 text-[#D97706] font-semibold">Daytime Only</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[#5C286A]">Covered Weather Protection</td>
+              <td class="p-3 text-[#2D1136]">Yes (Multi-level)</td>
+              <td class="p-3 text-[#2D1136]">Yes (Underground)</td>
+              <td class="p-3 text-[#2D1136]">Yes (Basement)</td>
+              <td class="p-3 text-[#5C286A]">Open Lot</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[#5C286A]">Action</td>
+              <td class="p-3"><button onclick="closeComparisonMatrix(); selectSpotById('spot-1')" class="btn-plum px-3 py-1.5 rounded-lg text-[11px] font-bold">View Spot</button></td>
+              <td class="p-3"><button onclick="closeComparisonMatrix(); selectSpotById('spot-2')" class="btn-plum px-3 py-1.5 rounded-lg text-[11px] font-bold">View Spot</button></td>
+              <td class="p-3"><button onclick="closeComparisonMatrix(); selectSpotById('spot-3')" class="btn-plum px-3 py-1.5 rounded-lg text-[11px] font-bold">View Spot</button></td>
+              <td class="p-3"><button onclick="closeComparisonMatrix(); selectSpotById('spot-4')" class="btn-plum px-3 py-1.5 rounded-lg text-[11px] font-bold">View Spot</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="text-right">
+        <button onclick="closeComparisonMatrix()" class="px-5 py-2.5 rounded-xl bg-[#F5EFF9] hover:bg-[#EFE6F6] text-[#2D1136] text-xs font-bold border border-[#E4D5EC]">
+          Close Table
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: DEMO RESERVATION PASS CONFIRMATION-->
+  <!-- ========================================== -->
+  <div id="modal-pass" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-6 shadow-2xl border border-[#E4D5EC] screen-fade">
+      
+      <!-- Modal Header -->
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-[#DCFCE7] text-[#059669] flex items-center justify-center mx-auto shadow-sm">
+          <i data-lucide="check-circle" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-[#2D1136]">Demo Parking Pass Generated</h3>
+        <p class="text-xs text-[#5C286A]">Simulated reservation for demonstration purposes</p>
+      </div>
+
+      <!-- Ticket Card Container -->
+      <div class="bg-[#F5EFF9] rounded-2xl p-4 border border-[#E4D5EC] space-y-3">
+        
+        <div class="flex items-center justify-between border-b border-[#E4D5EC] pb-2.5">
+          <div class="flex items-center gap-2">
+            <img src="./assets/spotza-icon.jpg" class="w-7 h-7 rounded-lg" alt="SpotZa">
+            <span class="text-xs font-bold text-[#2D1136]">SpotZa FastPass</span>
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-wider bg-[#FCE7F3] text-[#8A2E77] px-2 py-0.5 rounded">
+            DEMO VOUCHER
+          </span>
+        </div>
+
+        <div class="space-y-1.5 text-xs">
+          <div class="flex justify-between">
+            <span class="text-[#5C286A]">Facility:</span>
+            <span id="modal-pass-facility" class="font-bold text-[#2D1136] text-right">Central Multi-Level Deck</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-[#5C286A]">Vehicle Type:</span>
+            <span id="modal-pass-vehicle" class="font-bold text-[#2D1136]">Car</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-[#5C286A]">Allocated Bay:</span>
+            <span id="modal-pass-bay" class="font-bold text-[#8A2E77]">Deck Level 2 • Bay B-14</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-[#5C286A]">Estimated Duration:</span>
+            <span id="modal-pass-duration" class="font-bold text-[#2D1136]">3 Hours</span>
+          </div>
+          <div class="flex justify-between border-t border-[#E4D5EC] pt-2">
+            <span class="font-bold text-[#2D1136]">Estimated Total (₹):</span>
+            <span id="modal-pass-price" class="font-black text-base text-[#2D1136]">₹120</span>
+          </div>
+        </div>
+
+        <!-- Simulated QR Code -->
+        <div class="pt-2 text-center">
+          <div class="inline-block p-2 bg-white rounded-xl border border-[#E4D5EC] shadow-inner">
+            <div class="w-24 h-24 bg-gradient-to-br from-[#2D1136] to-[#8A2E77] rounded-lg flex items-center justify-center text-white">
+              <i data-lucide="qr-code" class="w-16 h-16"></i>
+            </div>
+          </div>
+          <p class="text-[10px] text-[#5C286A] mt-1 font-mono">PASS-ID: SPZ-9482-DEMO</p>
+        </div>
+
+      </div>
+
+      <!-- Demo Disclaimer Box -->
+      <div class="p-3 bg-[#FEF3C7] rounded-xl border border-[#FDE68A] text-[11px] text-[#92400E] flex items-start gap-2">
+        <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+        <span><strong>Student Prototype:</strong> No actual payment, bank account, or legal reservation was processed.</span>
+      </div>
+
+      <!-- Close Button -->
+      <button 
+        onclick="closeReservationModal()" 
+        class="w-full py-3 rounded-xl btn-plum font-bold text-sm shadow-md"
+      >
+        Done / Return to App
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification (Simulated Availability Ping) -->
+  <div id="toast-notification" class="fixed bottom-5 right-5 z-50 bg-[#2D1136] text-white px-4 py-3 rounded-2xl shadow-xl border border-[#8A2E77] text-xs font-bold hidden items-center gap-2 screen-fade">
+    <i data-lucide="check-circle" class="w-4 h-4 text-[#34D399]"></i>
+    <span id="toast-message">Status refreshed: 38 spaces currently open</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-[#E4D5EC] bg-white py-6">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#5C286A]">
+      <div class="flex items-center gap-2">
+        <img src="./assets/spotza-icon.jpg" alt="SpotZa" class="w-6 h-6 rounded-md">
+        <span class="font-bold text-[#2D1136]">SpotZa Smart Parking</span>
+        <span>• YIIC Edition 9 Assignment Prototype</span>
+      </div>
+      <div>
+        <span>Designed for drivers with transparent pricing in Indian Rupees (₹)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="./js/data.js"></script>
+  <script src="./js/app.js"></script>
+  <script>
+    // Initialize Lucide icons on DOM load
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
