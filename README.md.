@@ -1,0 +1,89 @@
+# SpotZa - Smart Parking Web Application Prototype
+**YIIC Edition 9 – Week 2 App Building Assignment**
+
+[![SpotZa Prototype](https://img.shields.io/badge/Prototype-YIIC%20Edition%209-8A2E77?style=for-the-badge)](./index.html)
+[![Currency](https://img.shields.io/badge/Currency-Indian%20Rupees%20(₹)-2D1136?style=for-the-badge)](./index.html)
+
+---
+
+## 🚗 About SpotZa
+**SpotZa** is a responsive smart parking web application prototype designed to solve the critical friction drivers face when navigating to busy commercial districts: **unexpected exorbitant parking tariffs, lack of security, unknown space availability, and inconvenient walking distances**.
+
+By providing upfront comparative intelligence in **Indian Rupees (₹)**, SpotZa helps drivers select the safest, most convenient, and most affordable parking spot before setting off.
+
+---
+
+## 🎨 Visual Identity & Design System
+Strictly adhering to the approved luxury and modern visual palette:
+- **Deep Plum (`#2D1136`):** Primary headings, high-contrast labels, primary action buttons, deep accents.
+- **Plum Midtone (`#5C286A`):** Subheadings, active borders, section subtitles.
+- **Pinkish Purple (`#8A2E77` / `#9333EA`):** Active tabs, badge highlights, interactive icons.
+- **Soft Lavender (`#F5EFF9`):** Canvas background, subtle card accents, chip backgrounds.
+- **Light Pastel Pink (`#FCE7F3`):** Highlighting tags, promotional badges, subtle alerts.
+- **Clean White (`#FFFFFF`):** Elevated cards, modals, high-legibility surfaces.
+- **Official App Icon:** Features the official uploaded SpotZa icon with a high-gloss 3D 'S' location pin and embedded vehicle silhouette.
+
+---
+
+## 📱 The 3 Core Screens
+
+### 1. Screen 1: Find Parking (Home & Search)
+- **Branding & Value Introduction:** SpotZa official icon, clear problem-solving value proposition.
+- **Destination Input:** Search field with 1-click popular presets (*City Center Commercial Hub, Central Metro Terminal, District Shopping Plaza, Civic Financial District*).
+- **Vehicle Type Toggle:** Segmented selector (**Car 🚗** vs. **Bike 🏍️**). Switching vehicle type dynamically recalibrates the budget slider and pricing baselines.
+- **Maximum Hourly Budget Selector:** Real-time slider and quick buttons in Indian Rupees (`₹20/hr` to `₹100/hr`).
+- **Primary Action:** *"Find Available Parking Spaces"* navigating to the comparison screen.
+- **Trust Highlights:** Zero pricing shocks, verified security, and walking convenience.
+
+### 2. Screen 2: Compare Parking (Comparison & Discovery)
+- **Active Search Context Strip:** Displays destination, vehicle type, and budget threshold with a 1-click *"Edit Search"* button.
+- **Multi-Factor Sorting:** Sort by *Lowest Price (₹)*, *Closest Distance*, *Most Available Spaces*, or *Highest Rated*.
+- **Quick Filters:** *All Lots*, *Within My Budget*, *CCTV Monitored*, and *24/7 Security Guard*.
+- **Generic Parking Location Cards (4 Realistic Options):**
+  - *Central Multi-Level Parking Deck* (0.25 km, ₹40/hr, 38 spots open, 32 HD CCTV, 24/7 Guard)
+  - *Metro Junction Safe Vault Lot* (0.45 km, ₹30/hr, 84 spots open, Underground, 2-Shift Guard)
+  - *City Plaza Underground Garage* (0.65 km, ₹60/hr, 112 spots open, Valet, 64 AI Cams)
+  - *District Market Open Secure Yard* (0.85 km, ₹20/hr, 14 spots open, Budget pick)
+- **Dynamic Availability Meter:** Visual progress bar color-coded by availability percentage (*Ample Spaces*, *Filling Fast*, *Almost Full*).
+- **Side-by-Side Comparison Matrix:** Modal table comparing all 4 facilities side-by-side across all criteria.
+
+### 3. Screen 3: Parking Details & Cost Calculator
+- **Facility Profile & Metrics:** Category, full generic address, rating, walking time, distance, capacity, and security score.
+- **Security Deep-Dive:** 24/7 CCTV surveillance specs and on-duty guard shift schedule.
+- **Facility Amenities:** Covered parking, EV fast charging, wheelchair accessibility, automated boom barriers, and LED illumination.
+- **Interactive Estimated Parking Cost Calculator:**
+  - Interactive duration slider (1 hr to 12 hrs) + quick select chips.
+  - Dynamic mathematical formula: `Hourly Rate × Selected Duration = Estimated Total (₹)`.
+  - Transparent cost breakdown and budget comparison indicator.
+- **Demo Prototype Actions:**
+  - *"Check Availability"* button triggering simulated sensor verification.
+  - *"Select This Parking Spot"* generating a demo FastPass voucher with simulated QR code.
+
+---
+
+## 🛠️ Project Structure
+```text
+spotza-smart-parking/
+├── index.html            // Main responsive HTML5 single-page application
+├── README.md             // Documentation and guide
+├── assets/
+│   └── spotza-icon.jpg   // Official SpotZa application icon
+├── css/
+│   └── styles.css        // Custom design system, variables, and animations
+└── js/
+    ├── data.js           // Generic parking dataset in Indian Rupees (₹)
+    └── app.js            // Application state, screen routing, and calculations
+```
+
+---
+
+## 🚀 How to Run the Prototype
+1. Open File Explorer and navigate to:
+   `C:\Users\Gurunanak\.gemini\antigravity\scratch\spotza-smart-parking\`
+2. Double-click **`index.html`** to open it in any web browser (Google Chrome, Microsoft Edge, Brave, etc.).
+3. No build steps, Node.js, or external servers are required. The prototype is completely self-contained.
+
+---
+
+## 🔒 Demonstration Disclaimer
+This application is a student front-end prototype created for **YIIC Edition 9 (Week 2 Assignment)**. All parking facilities, space counts, and tariff rates are simulated demonstration data. No real financial payments or legal bookings are executed.
